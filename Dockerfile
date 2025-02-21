@@ -4,13 +4,14 @@ FROM ubuntu:20.04
 # Definir variáveis para evitar prompts interativos
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Atualizar pacotes e instalar dependências
+# Atualizar pacotes e instalar dependências essenciais
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     cmake \
-    libmariadb-dev \
-    default-libmysqlclient-dev \
+    mariadb-client \
+    mariadb-server \
+    libmariadb-dev-compat \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
