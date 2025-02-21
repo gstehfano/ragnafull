@@ -1,35 +1,28 @@
-# Usa a imagem base do Ubuntu
+# Usando Ubuntu como base
 FROM ubuntu:20.04
 
-# Evita perguntas interativas durante a instalação
+# Definir variáveis para que a instalação não peça interação do usuário
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Atualiza o sistema e instala dependências
-RUN apt update && apt install -y \
+# Atualizar pacotes e instalar dependências
+RUN apt-get update && apt-get install -y \
     build-essential \
     git \
+    cmake \
+    libmariadb-dev \
     libmysqlclient-dev \
     zlib1g-dev \
-    libncurses5-dev \
-    libreadline-dev \
-    curl \
-    cmake \
-    make
+    && rm -rf /var/lib/apt/lists/*
 
-# Define o diretório de trabalho
-WORKDIR /rathena
+# Clonar o repositório do rAthena
+WORKDIR /app
+RUN git clone --depth 1 https://github.com/rathena/rathena.git .
 
-# Copia os arquivos do repositório para dentro do container
-COPY . /rathena
+# Compilar o rAthena
+RUN mkdir build && cd build && cmake .. && make server
 
-# Configura e compila o rAthena
-RUN chmod +x configure && \
-    ./configure && \
-    make clean && \
-    make server
-
-# Exponha as portas do servidor
+# Expor as portas do servidor Ragnarok
 EXPOSE 5121 6121 6900
 
-# Comando para iniciar o servidor
-CMD ["./athena-start"]
+# Comando para iniciar o servidor automaticamente
+CMD ["./build/run-server.sh"]
