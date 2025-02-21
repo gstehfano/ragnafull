@@ -1,7 +1,7 @@
 # Usando Ubuntu como base
 FROM ubuntu:20.04
 
-# Definir variáveis para que a instalação não peça interação do usuário
+# Definir variáveis para evitar prompts interativos
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Atualizar pacotes e instalar dependências
@@ -10,19 +10,25 @@ RUN apt-get update && apt-get install -y \
     git \
     cmake \
     libmariadb-dev \
-    libmysqlclient-dev \
+    default-libmysqlclient-dev \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Criar diretório de trabalho
+WORKDIR /rathena
+
 # Clonar o repositório do rAthena
-WORKDIR /app
 RUN git clone --depth 1 https://github.com/rathena/rathena.git .
 
 # Compilar o rAthena
 RUN mkdir build && cd build && cmake .. && make server
 
-# Expor as portas do servidor Ragnarok
+# Copiar script de inicialização
+COPY run-server.sh /rathena/
+RUN chmod +x /rathena/run-server.sh
+
+# Expor portas do servidor
 EXPOSE 5121 6121 6900
 
 # Comando para iniciar o servidor automaticamente
-CMD ["./build/run-server.sh"]
+CMD ["/rathena/run-server.sh"]
